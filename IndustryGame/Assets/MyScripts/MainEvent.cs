@@ -91,8 +91,12 @@ public class MainEvent
             eventStages.Add(new EventStage(eventStageSO, this));
         }
     }
+    private int day;
+    public bool extincted;
     public void DayIdle()
     {
+        day++;
+        if (extincted) return;
         if (!isFinished)
         {
             if (isAppeared)
@@ -101,6 +105,24 @@ public class MainEvent
                 if (eventStages.Find(eventStage => !eventStage.IsFinished()) == null)
                 {
                     Finish();
+                }
+                else
+                {
+                    bool ext = true;
+                    foreach (Habitat habitat in generatedHabitats)
+                    {
+                        if (habitat.Level > 0)
+                        {
+                            ext = false;
+                            break;
+                        }
+                    }
+                    if (ext)
+                    {
+                        extincted = true;
+                        GameOverCanvas.instance.ShowScore(day.ToString(), concernedAnimal.animalName, concernedAnimal.image);
+                        Debug.Log("!!extincted");
+                    }
                 }
             }
             else
@@ -147,10 +169,10 @@ public class MainEvent
         PopUpCanvas.GenerateNewPopUpWindow(new PicturePopUpWindow(name + " @ " + region.name, descriptionAfterFinish, image));
         PopUpCanvas.GenerateNewPopUpWindow(new EventClearPopUp.Data(this));
         //add rewards
-        Stage.AddResourceValue(ResourceType.contribution, totalReward);
+        Stage.AddResourceValue(ResourceType.money, totalReward);
         region.UpdateConcernedSpecies();
         //generate next event
-        if(so.nextEventWhenFinish != null)
+        if (so.nextEventWhenFinish != null)
         {
             so.nextEventWhenFinish.TryGenerate();
         }
